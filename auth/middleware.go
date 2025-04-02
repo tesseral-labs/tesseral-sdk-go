@@ -14,7 +14,7 @@ import (
 // serves a [http.StatusUnauthorized] error.
 //
 // If a request is authentic, h will be called with a request whose context
-// works with [OrganizationID], [AccessTokenClaims], and [Credential].
+// works with [OrganizationID], [AccessTokenClaims], and [Credentials].
 func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 	authn := newAuthenticator(opts...)
 

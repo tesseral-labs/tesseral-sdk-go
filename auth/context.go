@@ -44,9 +44,9 @@ func AccessTokenClaims(ctx context.Context) (*tesseral.AccessTokenClaims, error)
 	return mustAuthContext(ctx, "AccessTokenClaims").claims, nil
 }
 
-// Credential returns the request's original credentials.
+// Credentials returns the request's original credentials.
 //
 // Panics if the provided ctx isn't downstream of [RequireAuth].
-func Credential(ctx context.Context) string {
+func Credentials(ctx context.Context) string {
 	return mustAuthContext(ctx, "Token").accessToken
 }
