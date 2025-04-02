@@ -1,4 +1,4 @@
-package authenticate
+package auth
 
 import (
 	"bytes"
@@ -25,14 +25,14 @@ func TestAuthenticateAccessToken(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.Name, func(t *testing.T) {
-			jwks, err := parseJWKS([]byte(tt.Jwks))
+			config, err := parseConfig([]byte(tt.Jwks))
 			if err != nil {
 				t.Fatalf("parse jwks: %v", err)
 			}
 
-			claims, err := authenticateAccessToken(jwks, time.Unix(tt.NowUnixSeconds, 0), tt.AccessToken)
+			claims, err := authenticateAccessToken(config.Keys, time.Unix(tt.NowUnixSeconds, 0), tt.AccessToken)
 			if tt.Claims == nil {
-				if !errors.Is(err, ErrInvalidAccessToken) {
+				if !errors.Is(err, errInvalidAccessToken) {
 					t.Fatalf("expected ErrInvalidAccessToken, got: %v", err)
 				}
 			} else {
