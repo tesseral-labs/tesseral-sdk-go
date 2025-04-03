@@ -4,7 +4,34 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/tesseral-labs/tesseral-sdk-go/accesstoken"
 )
+
+// Option is an option for [RequireAuth].
+type Option = accesstoken.Option
+
+// WithPublishableKey sets the publishable key for [RequireAuth]. This is
+// always required.
+var WithPublishableKey = accesstoken.WithPublishableKey
+
+// WithConfigAPIHostname sets the config API hostname for [RequireAuth].
+//
+// You can typically ignore this option. It is useful for those who self-host
+// Tesseral. The default is to use "config.tesseral.com".
+var WithConfigAPIHostname = accesstoken.WithConfigAPIHostname
+
+// WithHTTPClient sets the HTTP client used internally by [RequireAuth].
+//
+// The default is to use [http.DefaultClient].
+var WithHTTPClient = accesstoken.WithHTTPClient
+
+// WithJWKSRefreshInterval sets the JWKS refresh interval for [RequireAuth].
+//
+// [RequireAuth] keeps a cache of public keys used to sign access tokens. This
+// option controls how often that cache is updated. The default is to refresh
+// JWKS every 60 minutes.
+var WithJWKSRefreshInterval = accesstoken.WithJWKSRefreshInterval
 
 // RequireAuth blocks all request to h unless they are authenticated.
 //
@@ -16,18 +43,18 @@ import (
 // If a request is authentic, h will be called with a request whose context
 // works with [OrganizationID], [AccessTokenClaims], and [Credentials].
 func RequireAuth(h http.Handler, opts ...Option) http.Handler {
-	authn := newAuthenticator(opts...)
+	authn := accesstoken.NewAuthenticator(opts...)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		// call updateConfigData to populate authn.projectID
-		if err := authn.updateConfigData(ctx); err != nil {
-			panic(fmt.Errorf("fetch tesseral config: %w", err))
+		projectID, err := authn.ProjectID(ctx)
+		if err != nil {
+			panic(fmt.Errorf("RequireAuth: error fetching publishable key configuration: %w", err))
 		}
 
-		accessToken := extractAccessToken(authn.projectID, r)
-		accessTokenClaims, err := authn.authenticateAccessToken(ctx, accessToken)
+		accessToken := extractAccessToken(projectID, r)
+		accessTokenClaims, err := authn.AuthenticateAccessToken(ctx, accessToken)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			return

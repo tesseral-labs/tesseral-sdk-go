@@ -1,4 +1,4 @@
-package auth
+package accesstoken
 
 import (
 	"context"
@@ -25,10 +25,10 @@ type options struct {
 	jwksRefreshInterval time.Duration
 }
 
-// Option is an option for [RequireAuth].
+// Option is an option for [NewAuthenticator].
 type Option func(*options)
 
-// WithPublishableKey sets the publishable key for [RequireAuth]. This is
+// WithPublishableKey sets the publishable key for [NewAuthenticator]. This is
 // always required.
 func WithPublishableKey(publishableKey string) Option {
 	return func(o *options) {
@@ -36,7 +36,7 @@ func WithPublishableKey(publishableKey string) Option {
 	}
 }
 
-// WithConfigAPIHostname sets the config API hostname for [RequireAuth].
+// WithConfigAPIHostname sets the config API hostname for [NewAuthenticator].
 //
 // You can typically ignore this option. It is useful for those who self-host
 // Tesseral. The default is to use "config.tesseral.com".
@@ -46,7 +46,7 @@ func WithConfigAPIHostname(hostname string) Option {
 	}
 }
 
-// WithHTTPClient sets the HTTP client used internally by [RequireAuth].
+// WithHTTPClient sets the HTTP client used internally by [NewAuthenticator].
 //
 // The default is to use [http.DefaultClient].
 func WithHTTPClient(client *http.Client) Option {
@@ -55,9 +55,9 @@ func WithHTTPClient(client *http.Client) Option {
 	}
 }
 
-// WithJWKSRefreshInterval sets the JWKS refresh interval for [RequireAuth].
+// WithJWKSRefreshInterval sets the JWKS refresh interval for [NewAuthenticator].
 //
-// [RequireAuth] keeps a cache of public keys used to sign access tokens. This
+// [Authenticator] keeps a cache of public keys used to sign access tokens. This
 // option controls how often that cache is updated. The default is to refresh
 // JWKS every 60 minutes.
 func WithJWKSRefreshInterval(interval time.Duration) Option {
@@ -66,7 +66,15 @@ func WithJWKSRefreshInterval(interval time.Duration) Option {
 	}
 }
 
-type authenticator struct {
+// Authenticator verifies the authenticity of access tokens, and returns the
+// claims they encode.
+//
+// Authenticator is safe for concurrent use and should be re-used across
+// requests.
+//
+// The zero value of Authenticator is not valid. You must construct an
+// Authenticator using NewAuthenticator.
+type Authenticator struct {
 	options
 	projectID string
 
@@ -75,7 +83,9 @@ type authenticator struct {
 	jwksNextRefresh time.Time
 }
 
-func newAuthenticator(opts ...Option) *authenticator {
+// NewAuthenticator constructs an Authenticator. You must include
+// [WithPublishableKey] in opts, all other options are optional.
+func NewAuthenticator(opts ...Option) *Authenticator {
 	options := &options{
 		configAPIHostname:   "config.tesseral.com",
 		httpClient:          http.DefaultClient,
@@ -89,18 +99,33 @@ func newAuthenticator(opts ...Option) *authenticator {
 		panic(fmt.Errorf("auth.RequireAuth: you must provide an auth.WithPublishableKey() option"))
 	}
 
-	return &authenticator{
+	return &Authenticator{
 		options: *options,
 		jwks:    make(map[string]ecdsa.PublicKey),
 	}
 }
 
-func (a *authenticator) authenticateAccessToken(ctx context.Context, accessToken string) (*tesseral.AccessTokenClaims, error) {
+// ProjectID returns the Project ID for this Authenticator.
+func (a *Authenticator) ProjectID(ctx context.Context) (string, error) {
+	if err := a.updateConfigData(ctx); err != nil {
+		return "", fmt.Errorf("update config data: %w", err)
+	}
+	return a.projectID, nil
+}
+
+// AuthenticateAccessToken authenticates an access token and returns the claims
+// it contains.
+//
+// Returns an error if the access token is inauthentic, invalid, or expired.
+func (a *Authenticator) AuthenticateAccessToken(ctx context.Context, accessToken string) (*tesseral.AccessTokenClaims, error) {
 	if err := a.updateConfigData(ctx); err != nil {
 		return nil, fmt.Errorf("update config data: %w", err)
 	}
-	return authenticateAccessToken(a.jwks, time.Now(), accessToken)
+	return authenticateAccessToken(a.jwks, now(), accessToken)
 }
+
+// now is a var so we can unit-test timestamps without exposing an unsafe API
+var now = time.Now
 
 var errInvalidAccessToken = fmt.Errorf("invalid access token")
 
@@ -173,7 +198,7 @@ type configData struct {
 	Keys      map[string]ecdsa.PublicKey
 }
 
-func (a *authenticator) updateConfigData(ctx context.Context) error {
+func (a *Authenticator) updateConfigData(ctx context.Context) error {
 	// common path: jwks is fresh
 	a.jwksMu.RLock()
 	if a.jwksNextRefresh.After(time.Now()) {
@@ -204,7 +229,7 @@ func (a *authenticator) updateConfigData(ctx context.Context) error {
 	return nil
 }
 
-func (a *authenticator) fetchConfig(ctx context.Context) (*configData, error) {
+func (a *Authenticator) fetchConfig(ctx context.Context) (*configData, error) {
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://%s/v1/config/%s", a.configAPIHostname, a.publishableKey), nil)
 	if err != nil {
 		return nil, fmt.Errorf("create http request: %w", err)
