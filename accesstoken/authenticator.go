@@ -186,7 +186,7 @@ func authenticateAccessToken(jwks map[string]ecdsa.PublicKey, now time.Time, acc
 	}
 
 	nowUnix := float64(now.Unix())
-	if nowUnix < *claims.Nbf || nowUnix > *claims.Exp {
+	if nowUnix < claims.Nbf || nowUnix > claims.Exp {
 		return nil, errInvalidAccessToken
 	}
 
