@@ -1,6 +1,3 @@
 # Specify files that shouldn't be modified by Fern
-accesstoken/authenticate_test.go
-accesstoken/authenticator.go
-auth/context.go
-auth/middleware.go
-auth/middleware_test.go
+accesstoken/
+auth/
