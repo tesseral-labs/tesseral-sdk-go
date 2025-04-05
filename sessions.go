@@ -133,6 +133,8 @@ type Session struct {
 	LastActiveTime *time.Time `json:"lastActiveTime,omitempty" url:"lastActiveTime,omitempty"`
 	// When the Session expires.
 	ExpireTime *time.Time `json:"expireTime,omitempty" url:"expireTime,omitempty"`
+	// The primary authentication factor the end user used to log in.
+	PrimaryAuthFactor *int `json:"primaryAuthFactor,omitempty" url:"primaryAuthFactor,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -178,6 +180,13 @@ func (s *Session) GetExpireTime() *time.Time {
 		return nil
 	}
 	return s.ExpireTime
+}
+
+func (s *Session) GetPrimaryAuthFactor() *int {
+	if s == nil {
+		return nil
+	}
+	return s.PrimaryAuthFactor
 }
 
 func (s *Session) GetExtraProperties() map[string]interface{} {

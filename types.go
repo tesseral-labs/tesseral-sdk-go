@@ -13,17 +13,17 @@ type AccessTokenClaims struct {
 	// Will always be of the form "https://project-xxx.tesseral.app", where
 	//
 	//	"project-xxx" is your Project ID.
-	Iss *string `json:"iss,omitempty" url:"iss,omitempty"`
+	Iss string `json:"iss" url:"iss"`
 	// Will always be equal to the `user.id` claim.
-	Sub *string `json:"sub,omitempty" url:"sub,omitempty"`
+	Sub string `json:"sub" url:"sub"`
 	// Will always be equal to the `iss` claim.
-	Aud *string `json:"aud,omitempty" url:"aud,omitempty"`
+	Aud string `json:"aud" url:"aud"`
 	// When this Access Token expires, in seconds since the unix epoch.
-	Exp *float64 `json:"exp,omitempty" url:"exp,omitempty"`
+	Exp float64 `json:"exp" url:"exp"`
 	// When this Access Token was issued, in seconds since the unix epoch.
-	Nbf *float64 `json:"nbf,omitempty" url:"nbf,omitempty"`
+	Nbf float64 `json:"nbf" url:"nbf"`
 	// Will always be equal to the `nbf` claim.
-	Iat *float64 `json:"iat,omitempty" url:"iat,omitempty"`
+	Iat float64 `json:"iat" url:"iat"`
 	// The Organization the User is logged into.
 	Organization *AccessTokenOrganization `json:"organization,omitempty" url:"organization,omitempty"`
 	// The User that's logged in.
@@ -39,44 +39,44 @@ type AccessTokenClaims struct {
 	rawJSON         json.RawMessage
 }
 
-func (a *AccessTokenClaims) GetIss() *string {
+func (a *AccessTokenClaims) GetIss() string {
 	if a == nil {
-		return nil
+		return ""
 	}
 	return a.Iss
 }
 
-func (a *AccessTokenClaims) GetSub() *string {
+func (a *AccessTokenClaims) GetSub() string {
 	if a == nil {
-		return nil
+		return ""
 	}
 	return a.Sub
 }
 
-func (a *AccessTokenClaims) GetAud() *string {
+func (a *AccessTokenClaims) GetAud() string {
 	if a == nil {
-		return nil
+		return ""
 	}
 	return a.Aud
 }
 
-func (a *AccessTokenClaims) GetExp() *float64 {
+func (a *AccessTokenClaims) GetExp() float64 {
 	if a == nil {
-		return nil
+		return 0
 	}
 	return a.Exp
 }
 
-func (a *AccessTokenClaims) GetNbf() *float64 {
+func (a *AccessTokenClaims) GetNbf() float64 {
 	if a == nil {
-		return nil
+		return 0
 	}
 	return a.Nbf
 }
 
-func (a *AccessTokenClaims) GetIat() *float64 {
+func (a *AccessTokenClaims) GetIat() float64 {
 	if a == nil {
-		return nil
+		return 0
 	}
 	return a.Iat
 }
@@ -144,15 +144,15 @@ func (a *AccessTokenClaims) String() string {
 // Information in an Access Token about who is impersonating the User.
 type AccessTokenImpersonator struct {
 	// The email address of the individual on your staff impersonating the User.
-	Email *string `json:"email,omitempty" url:"email,omitempty"`
+	Email string `json:"email" url:"email"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (a *AccessTokenImpersonator) GetEmail() *string {
+func (a *AccessTokenImpersonator) GetEmail() string {
 	if a == nil {
-		return nil
+		return ""
 	}
 	return a.Email
 }
@@ -194,24 +194,24 @@ func (a *AccessTokenImpersonator) String() string {
 //	into.
 type AccessTokenOrganization struct {
 	// The Organization's ID.
-	ID *string `json:"id,omitempty" url:"id,omitempty"`
+	ID string `json:"id" url:"id"`
 	// The Organization's display name.
-	DisplayName *string `json:"displayName,omitempty" url:"displayName,omitempty"`
+	DisplayName string `json:"displayName" url:"displayName"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (a *AccessTokenOrganization) GetID() *string {
+func (a *AccessTokenOrganization) GetID() string {
 	if a == nil {
-		return nil
+		return ""
 	}
 	return a.ID
 }
 
-func (a *AccessTokenOrganization) GetDisplayName() *string {
+func (a *AccessTokenOrganization) GetDisplayName() string {
 	if a == nil {
-		return nil
+		return ""
 	}
 	return a.DisplayName
 }
@@ -251,15 +251,15 @@ func (a *AccessTokenOrganization) String() string {
 // Information in an Access Token about the current Session.
 type AccessTokenSession struct {
 	// The Session ID.
-	ID *string `json:"id,omitempty" url:"id,omitempty"`
+	ID string `json:"id" url:"id"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (a *AccessTokenSession) GetID() *string {
+func (a *AccessTokenSession) GetID() string {
 	if a == nil {
-		return nil
+		return ""
 	}
 	return a.ID
 }
@@ -299,35 +299,26 @@ func (a *AccessTokenSession) String() string {
 // Information in an Access Token about the logged-in User.
 type AccessTokenUser struct {
 	// The User's ID.
-	ID *string `json:"id,omitempty" url:"id,omitempty"`
+	ID string `json:"id" url:"id"`
 	// The User's email.
-	Email *string `json:"email,omitempty" url:"email,omitempty"`
-	// The User's display name.
-	DisplayName *string `json:"displayName,omitempty" url:"displayName,omitempty"`
+	Email string `json:"email" url:"email"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (a *AccessTokenUser) GetID() *string {
+func (a *AccessTokenUser) GetID() string {
 	if a == nil {
-		return nil
+		return ""
 	}
 	return a.ID
 }
 
-func (a *AccessTokenUser) GetEmail() *string {
+func (a *AccessTokenUser) GetEmail() string {
 	if a == nil {
-		return nil
+		return ""
 	}
 	return a.Email
-}
-
-func (a *AccessTokenUser) GetDisplayName() *string {
-	if a == nil {
-		return nil
-	}
-	return a.DisplayName
 }
 
 func (a *AccessTokenUser) GetExtraProperties() map[string]interface{} {

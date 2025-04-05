@@ -29,7 +29,7 @@ func mustAuthContext(ctx context.Context, name string) *ctxValue {
 //
 // Panics if the provided ctx isn't downstream of [RequireAuth].
 func OrganizationID(ctx context.Context) string {
-	return *mustAuthContext(ctx, "OrganizationID").claims.Organization.ID
+	return mustAuthContext(ctx, "OrganizationID").claims.Organization.ID
 }
 
 // AccessTokenClaims returns the claims inside the request's access token, if
