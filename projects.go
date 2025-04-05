@@ -96,11 +96,15 @@ type Project struct {
 	MicrosoftOauthClientSecret *string `json:"microsoftOauthClientSecret,omitempty" url:"microsoftOauthClientSecret,omitempty"`
 	// The domain where the Project's Vault lives.
 	VaultDomain *string `json:"vaultDomain,omitempty" url:"vaultDomain,omitempty"`
+	// Whether vault_domain is different from the automatically-assigned one.
+	VaultDomainCustom *bool `json:"vaultDomainCustom,omitempty" url:"vaultDomainCustom,omitempty"`
 	// The set of domains the Project trusts.
 	//
 	//	Client-side JavaScript on these domains can take actions on behalf of
 	//	logged-in Users.
 	TrustedDomains []string `json:"trustedDomains,omitempty" url:"trustedDomains,omitempty"`
+	// The domain that authentication cookies are stored on.
+	CookieDomain *string `json:"cookieDomain,omitempty" url:"cookieDomain,omitempty"`
 	// Where Users are redirected after returning from the Vault.
 	RedirectURI *string `json:"redirectUri,omitempty" url:"redirectUri,omitempty"`
 	// Where Users are redirected after logging in.
@@ -226,11 +230,25 @@ func (p *Project) GetVaultDomain() *string {
 	return p.VaultDomain
 }
 
+func (p *Project) GetVaultDomainCustom() *bool {
+	if p == nil {
+		return nil
+	}
+	return p.VaultDomainCustom
+}
+
 func (p *Project) GetTrustedDomains() []string {
 	if p == nil {
 		return nil
 	}
 	return p.TrustedDomains
+}
+
+func (p *Project) GetCookieDomain() *string {
+	if p == nil {
+		return nil
+	}
+	return p.CookieDomain
 }
 
 func (p *Project) GetRedirectURI() *string {
