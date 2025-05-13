@@ -25,3 +25,10 @@ func TestAccessTokenClaims(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, want, got)
 }
+
+func TestHasPermission(t *testing.T) {
+	ctx := newAuthContext(context.Background(), "", &tesseral.AccessTokenClaims{Actions: []string{"a.b.c", "d.e.f"}})
+	assert.True(t, HasPermission(ctx, "a.b.c"))
+	assert.True(t, HasPermission(ctx, "d.e.f"))
+	assert.False(t, HasPermission(ctx, "x.y.z"))
+}

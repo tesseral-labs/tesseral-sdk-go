@@ -50,3 +50,21 @@ func AccessTokenClaims(ctx context.Context) (*tesseral.AccessTokenClaims, error)
 func Credentials(ctx context.Context) string {
 	return mustAuthContext(ctx, "Token").accessToken
 }
+
+// HasPermission returns whether the requester has permission to carry out the
+// given action.
+//
+// Panics if the provided ctx isn't downstream of [RequireAuth].
+func HasPermission(ctx context.Context, action string) bool {
+	claims, err := AccessTokenClaims(ctx)
+	if err != nil {
+		panic(fmt.Errorf("could not get access token claims: %w", err))
+	}
+
+	for _, a := range claims.Actions {
+		if a == action {
+			return true
+		}
+	}
+	return false
+}
