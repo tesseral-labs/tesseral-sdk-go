@@ -273,6 +273,10 @@ type User struct {
 	MicrosoftUserID *string `json:"microsoftUserId,omitempty" url:"microsoftUserId,omitempty"`
 	// Whether the User has an authenticator app set up.
 	HasAuthenticatorApp *bool `json:"hasAuthenticatorApp,omitempty" url:"hasAuthenticatorApp,omitempty"`
+	// The User's human-friendly name.
+	DisplayName *string `json:"displayName,omitempty" url:"displayName,omitempty"`
+	// The URL of the User's profile picture.
+	ProfilePictureURL *string `json:"profilePictureUrl,omitempty" url:"profilePictureUrl,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -339,6 +343,20 @@ func (u *User) GetHasAuthenticatorApp() *bool {
 		return nil
 	}
 	return u.HasAuthenticatorApp
+}
+
+func (u *User) GetDisplayName() *string {
+	if u == nil {
+		return nil
+	}
+	return u.DisplayName
+}
+
+func (u *User) GetProfilePictureURL() *string {
+	if u == nil {
+		return nil
+	}
+	return u.ProfilePictureURL
 }
 
 func (u *User) GetExtraProperties() map[string]interface{} {

@@ -9,10 +9,12 @@ import (
 	organizations "github.com/tesseral-labs/tesseral-sdk-go/organizations"
 	passkeys "github.com/tesseral-labs/tesseral-sdk-go/passkeys"
 	projects "github.com/tesseral-labs/tesseral-sdk-go/projects"
+	roles "github.com/tesseral-labs/tesseral-sdk-go/roles"
 	samlconnections "github.com/tesseral-labs/tesseral-sdk-go/samlconnections"
 	scimapikeys "github.com/tesseral-labs/tesseral-sdk-go/scimapikeys"
 	sessions "github.com/tesseral-labs/tesseral-sdk-go/sessions"
 	userinvites "github.com/tesseral-labs/tesseral-sdk-go/userinvites"
+	userroleassignments "github.com/tesseral-labs/tesseral-sdk-go/userroleassignments"
 	users "github.com/tesseral-labs/tesseral-sdk-go/users"
 	http "net/http"
 	os "os"
@@ -23,14 +25,16 @@ type Client struct {
 	caller  *internal.Caller
 	header  http.Header
 
-	Organizations   *organizations.Client
-	Passkeys        *passkeys.Client
-	Projects        *projects.Client
-	SAMLConnections *samlconnections.Client
-	ScimApiKeys     *scimapikeys.Client
-	Sessions        *sessions.Client
-	UserInvites     *userinvites.Client
-	Users           *users.Client
+	Organizations       *organizations.Client
+	Passkeys            *passkeys.Client
+	Projects            *projects.Client
+	Roles               *roles.Client
+	SAMLConnections     *samlconnections.Client
+	ScimApiKeys         *scimapikeys.Client
+	Sessions            *sessions.Client
+	UserInvites         *userinvites.Client
+	UserRoleAssignments *userroleassignments.Client
+	Users               *users.Client
 }
 
 func NewClient(opts ...option.RequestOption) *Client {
@@ -46,14 +50,16 @@ func NewClient(opts ...option.RequestOption) *Client {
 				MaxAttempts: options.MaxAttempts,
 			},
 		),
-		header:          options.ToHeader(),
-		Organizations:   organizations.NewClient(opts...),
-		Passkeys:        passkeys.NewClient(opts...),
-		Projects:        projects.NewClient(opts...),
-		SAMLConnections: samlconnections.NewClient(opts...),
-		ScimApiKeys:     scimapikeys.NewClient(opts...),
-		Sessions:        sessions.NewClient(opts...),
-		UserInvites:     userinvites.NewClient(opts...),
-		Users:           users.NewClient(opts...),
+		header:              options.ToHeader(),
+		Organizations:       organizations.NewClient(opts...),
+		Passkeys:            passkeys.NewClient(opts...),
+		Projects:            projects.NewClient(opts...),
+		Roles:               roles.NewClient(opts...),
+		SAMLConnections:     samlconnections.NewClient(opts...),
+		ScimApiKeys:         scimapikeys.NewClient(opts...),
+		Sessions:            sessions.NewClient(opts...),
+		UserInvites:         userinvites.NewClient(opts...),
+		UserRoleAssignments: userroleassignments.NewClient(opts...),
+		Users:               users.NewClient(opts...),
 	}
 }

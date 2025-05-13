@@ -9,6 +9,25 @@ import (
 	time "time"
 )
 
+type UserInvitesCreateUserInviteRequest struct {
+	// Whether to send an email automatically as part of the invite.
+	SendEmail *bool       `json:"-" url:"sendEmail,omitempty"`
+	Body      *UserInvite `json:"-" url:"-"`
+}
+
+func (u *UserInvitesCreateUserInviteRequest) UnmarshalJSON(data []byte) error {
+	body := new(UserInvite)
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	u.Body = body
+	return nil
+}
+
+func (u *UserInvitesCreateUserInviteRequest) MarshalJSON() ([]byte, error) {
+	return json.Marshal(u.Body)
+}
+
 type UserInvitesListUserInvitesRequest struct {
 	// The Organization ID.
 	OrganizationID *string `json:"-" url:"organizationId,omitempty"`
