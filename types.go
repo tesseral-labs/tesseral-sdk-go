@@ -24,6 +24,8 @@ type AccessTokenClaims struct {
 	Nbf float64 `json:"nbf" url:"nbf"`
 	// Will always be equal to the `nbf` claim.
 	Iat float64 `json:"iat" url:"iat"`
+	// The set of actions the User has permission to carry out.
+	Actions []string `json:"actions,omitempty" url:"actions,omitempty"`
 	// The Organization the User is logged into.
 	Organization *AccessTokenOrganization `json:"organization,omitempty" url:"organization,omitempty"`
 	// The User that's logged in.
@@ -79,6 +81,13 @@ func (a *AccessTokenClaims) GetIat() float64 {
 		return 0
 	}
 	return a.Iat
+}
+
+func (a *AccessTokenClaims) GetActions() []string {
+	if a == nil {
+		return nil
+	}
+	return a.Actions
 }
 
 func (a *AccessTokenClaims) GetOrganization() *AccessTokenOrganization {
@@ -302,6 +311,10 @@ type AccessTokenUser struct {
 	ID string `json:"id" url:"id"`
 	// The User's email.
 	Email string `json:"email" url:"email"`
+	// The User's full name.
+	DisplayName *string `json:"displayName,omitempty" url:"displayName,omitempty"`
+	// A URL of the User's profile picture.
+	ProfilePictureURL *string `json:"profilePictureUrl,omitempty" url:"profilePictureUrl,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -319,6 +332,20 @@ func (a *AccessTokenUser) GetEmail() string {
 		return ""
 	}
 	return a.Email
+}
+
+func (a *AccessTokenUser) GetDisplayName() *string {
+	if a == nil {
+		return nil
+	}
+	return a.DisplayName
+}
+
+func (a *AccessTokenUser) GetProfilePictureURL() *string {
+	if a == nil {
+		return nil
+	}
+	return a.ProfilePictureURL
 }
 
 func (a *AccessTokenUser) GetExtraProperties() map[string]interface{} {

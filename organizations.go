@@ -372,6 +372,8 @@ type Organization struct {
 	RequireMfa *bool `json:"requireMfa,omitempty" url:"requireMfa,omitempty"`
 	// Whether the Organization has SCIM enabled.
 	SCIMEnabled *bool `json:"scimEnabled,omitempty" url:"scimEnabled,omitempty"`
+	// Whether the Organization's Users can create Organization-specific Roles.
+	CustomRolesEnabled *bool `json:"customRolesEnabled,omitempty" url:"customRolesEnabled,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -466,6 +468,13 @@ func (o *Organization) GetSCIMEnabled() *bool {
 		return nil
 	}
 	return o.SCIMEnabled
+}
+
+func (o *Organization) GetCustomRolesEnabled() *bool {
+	if o == nil {
+		return nil
+	}
+	return o.CustomRolesEnabled
 }
 
 func (o *Organization) GetExtraProperties() map[string]interface{} {
