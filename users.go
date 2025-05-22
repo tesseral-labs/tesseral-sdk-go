@@ -271,6 +271,8 @@ type User struct {
 	GoogleUserID *string `json:"googleUserId,omitempty" url:"googleUserId,omitempty"`
 	// The Microsoft User ID, if the User has ever logged in with Microsoft.
 	MicrosoftUserID *string `json:"microsoftUserId,omitempty" url:"microsoftUserId,omitempty"`
+	// The Github User ID, if the User has ever logged in with GitHub.
+	GithubUserID *string `json:"githubUserId,omitempty" url:"githubUserId,omitempty"`
 	// Whether the User has an authenticator app set up.
 	HasAuthenticatorApp *bool `json:"hasAuthenticatorApp,omitempty" url:"hasAuthenticatorApp,omitempty"`
 	// The User's human-friendly name.
@@ -336,6 +338,13 @@ func (u *User) GetMicrosoftUserID() *string {
 		return nil
 	}
 	return u.MicrosoftUserID
+}
+
+func (u *User) GetGithubUserID() *string {
+	if u == nil {
+		return nil
+	}
+	return u.GithubUserID
 }
 
 func (u *User) GetHasAuthenticatorApp() *bool {

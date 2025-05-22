@@ -358,6 +358,8 @@ type Organization struct {
 	LogInWithGoogle *bool `json:"logInWithGoogle,omitempty" url:"logInWithGoogle,omitempty"`
 	// Whether the Organization supports "Log in with Microsoft".
 	LogInWithMicrosoft *bool `json:"logInWithMicrosoft,omitempty" url:"logInWithMicrosoft,omitempty"`
+	// Whether the Organization supports Log in with GitHub.
+	LogInWithGithub *bool `json:"logInWithGithub,omitempty" url:"logInWithGithub,omitempty"`
 	// Whether the Organization supports "Log in with email".
 	LogInWithEmail *bool `json:"logInWithEmail,omitempty" url:"logInWithEmail,omitempty"`
 	// Whether the Organization supports "Log in with password".
@@ -374,6 +376,8 @@ type Organization struct {
 	SCIMEnabled *bool `json:"scimEnabled,omitempty" url:"scimEnabled,omitempty"`
 	// Whether the Organization's Users can create Organization-specific Roles.
 	CustomRolesEnabled *bool `json:"customRolesEnabled,omitempty" url:"customRolesEnabled,omitempty"`
+	// Whether API Keys are enabled for the Organization.
+	APIKeysEnabled *bool `json:"apiKeysEnabled,omitempty" url:"apiKeysEnabled,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -419,6 +423,13 @@ func (o *Organization) GetLogInWithMicrosoft() *bool {
 		return nil
 	}
 	return o.LogInWithMicrosoft
+}
+
+func (o *Organization) GetLogInWithGithub() *bool {
+	if o == nil {
+		return nil
+	}
+	return o.LogInWithGithub
 }
 
 func (o *Organization) GetLogInWithEmail() *bool {
@@ -475,6 +486,13 @@ func (o *Organization) GetCustomRolesEnabled() *bool {
 		return nil
 	}
 	return o.CustomRolesEnabled
+}
+
+func (o *Organization) GetAPIKeysEnabled() *bool {
+	if o == nil {
+		return nil
+	}
+	return o.APIKeysEnabled
 }
 
 func (o *Organization) GetExtraProperties() map[string]interface{} {
