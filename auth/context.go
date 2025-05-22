@@ -9,13 +9,41 @@ import (
 
 type ctxKey struct{}
 
-type ctxValue struct {
+type accessTokenDetails struct {
 	accessToken string
 	claims      *tesseral.AccessTokenClaims
 }
 
-func newAuthContext(ctx context.Context, accessToken string, claims *tesseral.AccessTokenClaims) context.Context {
-	return context.WithValue(ctx, ctxKey{}, &ctxValue{accessToken: accessToken, claims: claims})
+type apiKeyDetails struct {
+	apiKeyID          string
+	apiKeySecretToken string
+	organizationID    string
+	actions           []string
+}
+
+type ctxValue struct {
+	accessTokenDetails *accessTokenDetails
+	apiKeyDetails      *apiKeyDetails
+}
+
+func newAccessTokenAuthContext(ctx context.Context, accessToken string, claims *tesseral.AccessTokenClaims) context.Context {
+	return context.WithValue(ctx, ctxKey{}, &ctxValue{
+		accessTokenDetails: &accessTokenDetails{
+			accessToken: accessToken,
+			claims:      claims,
+		},
+	})
+}
+
+func newAPIKeyAuthContext(ctx context.Context, apiKeySecretToken string, details *tesseral.AuthenticateAPIKeyResponse) context.Context {
+	return context.WithValue(ctx, ctxKey{}, &ctxValue{
+		apiKeyDetails: &apiKeyDetails{
+			apiKeyID:          derefOrEmptyString(details.APIKeyID),
+			apiKeySecretToken: apiKeySecretToken,
+			organizationID:    derefOrEmptyString(details.OrganizationID),
+			actions:           details.Actions,
+		},
+	})
 }
 
 func mustAuthContext(ctx context.Context, name string) *ctxValue {
@@ -25,11 +53,37 @@ func mustAuthContext(ctx context.Context, name string) *ctxValue {
 	panic(fmt.Sprintf("called auth.%s(ctx) but ctx does not carry auth information; did you forget to use auth.RequireAuth?", name))
 }
 
+// CredentialsType returns the type of credentials used to authenticate the
+// request.
+//
+// For accessToken-based authentication, this will be "access_token". For
+// apiKey-based authentication, this will be "api_key".
+func CredentialsType(ctx context.Context) string {
+	authCtx := mustAuthContext(ctx, "CredentialsType")
+
+	if authCtx.apiKeyDetails != nil {
+		return "api_key"
+	}
+	if authCtx.accessTokenDetails != nil {
+		return "access_token"
+	}
+	panic("unreachable")
+}
+
 // OrganizationID returns the ID of the organization the requester belongs to.
 //
 // Panics if the provided ctx isn't downstream of [RequireAuth].
 func OrganizationID(ctx context.Context) string {
-	return mustAuthContext(ctx, "OrganizationID").claims.Organization.ID
+	authCtx := mustAuthContext(ctx, "OrganizationID")
+
+	if authCtx.apiKeyDetails != nil {
+		return authCtx.apiKeyDetails.organizationID
+	}
+	if authCtx.accessTokenDetails != nil {
+		return authCtx.accessTokenDetails.claims.Organization.ID
+	}
+
+	panic("unreachable")
 }
 
 // AccessTokenClaims returns the claims inside the request's access token, if
@@ -41,30 +95,56 @@ func OrganizationID(ctx context.Context) string {
 //
 // Panics if the provided ctx isn't downstream of [RequireAuth].
 func AccessTokenClaims(ctx context.Context) (*tesseral.AccessTokenClaims, error) {
-	return mustAuthContext(ctx, "AccessTokenClaims").claims, nil
+	authCtx := mustAuthContext(ctx, "AccessTokenClaims")
+
+	if authCtx.accessTokenDetails != nil {
+		return authCtx.accessTokenDetails.claims, nil
+	}
+
+	panic("no access token claims found in context")
 }
 
 // Credentials returns the request's original credentials.
 //
 // Panics if the provided ctx isn't downstream of [RequireAuth].
 func Credentials(ctx context.Context) string {
-	return mustAuthContext(ctx, "Token").accessToken
+	authCtx := mustAuthContext(ctx, "Credentials")
+	if authCtx.apiKeyDetails != nil {
+		return authCtx.apiKeyDetails.apiKeySecretToken
+	}
+	if authCtx.accessTokenDetails != nil {
+		return authCtx.accessTokenDetails.accessToken
+	}
+
+	panic("unreachable")
 }
 
 // HasPermission returns whether the requester has permission to carry out the
 // given action.
-//
-// Panics if the provided ctx isn't downstream of [RequireAuth].
 func HasPermission(ctx context.Context, action string) bool {
-	claims, err := AccessTokenClaims(ctx)
-	if err != nil {
-		panic(fmt.Errorf("could not get access token claims: %w", err))
+	actions := []string{}
+
+	authCtx := mustAuthContext(ctx, "HasPermission")
+
+	if authCtx.apiKeyDetails != nil && authCtx.apiKeyDetails.actions != nil {
+		actions = authCtx.apiKeyDetails.actions
+	} else if authCtx.accessTokenDetails != nil && authCtx.accessTokenDetails.claims.Actions != nil {
+		actions = authCtx.accessTokenDetails.claims.Actions
 	}
 
-	for _, a := range claims.Actions {
+	for _, a := range actions {
 		if a == action {
 			return true
 		}
 	}
+
 	return false
+}
+
+func derefOrEmptyString(s *string) string {
+	var z string
+	if s == nil {
+		return z
+	}
+	return *s
 }

@@ -49,7 +49,7 @@ func TestExtractAccessToken(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			got := extractAccessToken(tt.projectID, tt.req)
+			got := extractCredential(tt.projectID, tt.req)
 			assert.Equal(t, tt.want, got)
 		})
 	}
