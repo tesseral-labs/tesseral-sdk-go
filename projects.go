@@ -72,6 +72,8 @@ type Project struct {
 	LogInWithGoogle *bool `json:"logInWithGoogle,omitempty" url:"logInWithGoogle,omitempty"`
 	// Whether the Project supports "Log in with Microsoft".
 	LogInWithMicrosoft *bool `json:"logInWithMicrosoft,omitempty" url:"logInWithMicrosoft,omitempty"`
+	// Whether the Project supports "Log in with GitHub".
+	LogInWithGithub *bool `json:"logInWithGithub,omitempty" url:"logInWithGithub,omitempty"`
 	// Whether the Project supports "Log in with email".
 	LogInWithEmail *bool `json:"logInWithEmail,omitempty" url:"logInWithEmail,omitempty"`
 	// Whether the Project supports "Log in with password".
@@ -94,6 +96,12 @@ type Project struct {
 	//
 	//	This field is write-only.
 	MicrosoftOauthClientSecret *string `json:"microsoftOauthClientSecret,omitempty" url:"microsoftOauthClientSecret,omitempty"`
+	// The OAuth Client ID to use for "Log in with GitHub".
+	GithubOauthClientID *string `json:"githubOauthClientId,omitempty" url:"githubOauthClientId,omitempty"`
+	// The OAuth Client ID to use for "Log in with GitHub"
+	//
+	//	This field is write only.
+	GithubOauthClientSecret *string `json:"githubOauthClientSecret,omitempty" url:"githubOauthClientSecret,omitempty"`
 	// The domain where the Project's Vault lives.
 	VaultDomain *string `json:"vaultDomain,omitempty" url:"vaultDomain,omitempty"`
 	// Whether vault_domain is different from the automatically-assigned one.
@@ -113,6 +121,10 @@ type Project struct {
 	AfterSignupRedirectURI *string `json:"afterSignupRedirectUri,omitempty" url:"afterSignupRedirectUri,omitempty"`
 	// Emails sent to Users come from this domain.
 	EmailSendFromDomain *string `json:"emailSendFromDomain,omitempty" url:"emailSendFromDomain,omitempty"`
+	// Whether the Project supports API Keys.
+	APIKeysEnabled *bool `json:"apiKeysEnabled,omitempty" url:"apiKeysEnabled,omitempty"`
+	// The prefix used for API Key secret tokens.
+	APIKeySecretTokenPrefix *string `json:"apiKeySecretTokenPrefix,omitempty" url:"apiKeySecretTokenPrefix,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -158,6 +170,13 @@ func (p *Project) GetLogInWithMicrosoft() *bool {
 		return nil
 	}
 	return p.LogInWithMicrosoft
+}
+
+func (p *Project) GetLogInWithGithub() *bool {
+	if p == nil {
+		return nil
+	}
+	return p.LogInWithGithub
 }
 
 func (p *Project) GetLogInWithEmail() *bool {
@@ -223,6 +242,20 @@ func (p *Project) GetMicrosoftOauthClientSecret() *string {
 	return p.MicrosoftOauthClientSecret
 }
 
+func (p *Project) GetGithubOauthClientID() *string {
+	if p == nil {
+		return nil
+	}
+	return p.GithubOauthClientID
+}
+
+func (p *Project) GetGithubOauthClientSecret() *string {
+	if p == nil {
+		return nil
+	}
+	return p.GithubOauthClientSecret
+}
+
 func (p *Project) GetVaultDomain() *string {
 	if p == nil {
 		return nil
@@ -277,6 +310,20 @@ func (p *Project) GetEmailSendFromDomain() *string {
 		return nil
 	}
 	return p.EmailSendFromDomain
+}
+
+func (p *Project) GetAPIKeysEnabled() *bool {
+	if p == nil {
+		return nil
+	}
+	return p.APIKeysEnabled
+}
+
+func (p *Project) GetAPIKeySecretTokenPrefix() *string {
+	if p == nil {
+		return nil
+	}
+	return p.APIKeySecretTokenPrefix
 }
 
 func (p *Project) GetExtraProperties() map[string]interface{} {
