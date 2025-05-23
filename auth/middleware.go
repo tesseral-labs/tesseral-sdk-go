@@ -13,7 +13,7 @@ import (
 )
 
 // Option is an option for [RequireAuth].
-type Option struct {
+type option struct {
 	PublishableKey      string
 	ConfigAPIHostname   string
 	HttpClient          *http.Client
@@ -21,6 +21,8 @@ type Option struct {
 	APIKeysEnabled      *bool
 	TesseralClient      *client.Client
 }
+
+type Option func(*option)
 
 // WithPublishableKey sets the publishable key for [RequireAuth]. This is
 // always required.
@@ -53,19 +55,25 @@ var WithJWKSRefreshInterval = accesstoken.WithJWKSRefreshInterval
 //
 // If a request is authentic, h will be called with a request whose context
 // works with [OrganizationID], [AccessTokenClaims], and [Credentials].
-func RequireAuth(h http.Handler, opts Option) http.Handler {
-	if opts.APIKeysEnabled != nil && *opts.APIKeysEnabled && opts.TesseralClient == nil && os.Getenv("TESSERAL_BACKEND_API_KEY") == "" {
+func RequireAuth(h http.Handler, opts ...Option) http.Handler {
+	cfg := &option{}
+
+	for _, opt := range opts {
+		opt(cfg) // mutate cfg using each Option
+	}
+
+	if cfg.APIKeysEnabled != nil && *cfg.APIKeysEnabled && cfg.TesseralClient == nil && os.Getenv("TESSERAL_BACKEND_API_KEY") == "" {
 		panic("RequireAuth: tesseral client is required when API keys are enabled")
 	}
 
 	authn := accesstoken.NewAuthenticator(
-		WithConfigAPIHostname(opts.ConfigAPIHostname),
-		WithPublishableKey(opts.PublishableKey),
-		WithHTTPClient(opts.HttpClient),
-		WithJWKSRefreshInterval(opts.JwksRefreshInterval),
+		WithPublishableKey(cfg.PublishableKey),
+		WithConfigAPIHostname(cfg.ConfigAPIHostname),
+		WithHTTPClient(cfg.HttpClient),
+		WithJWKSRefreshInterval(cfg.JwksRefreshInterval),
 	)
 
-	tesseralClient := opts.TesseralClient
+	tesseralClient := cfg.TesseralClient
 	if tesseralClient == nil {
 		tesseralClient = client.NewClient()
 	}
@@ -89,7 +97,7 @@ func RequireAuth(h http.Handler, opts Option) http.Handler {
 
 			ctx = newAccessTokenAuthContext(ctx, credential, accessTokenClaims)
 			h.ServeHTTP(w, r.WithContext(ctx))
-		} else if opts.APIKeysEnabled != nil && *opts.APIKeysEnabled && IsAPIKeyFormat(credential) {
+		} else if cfg.APIKeysEnabled != nil && *cfg.APIKeysEnabled && IsAPIKeyFormat(credential) {
 			apiKeyDetails, err := tesseralClient.APIKeys.AuthenticateAPIKey(ctx, &tesseral.AuthenticateAPIKeyRequest{
 				SecretToken: &credential,
 			})
@@ -104,6 +112,36 @@ func RequireAuth(h http.Handler, opts Option) http.Handler {
 			w.WriteHeader(http.StatusUnauthorized)
 		}
 	})
+}
+
+// WithAPIKeysEnabled sets whether API keys are enabled for [RequireAuth].
+// This is optional. If not set, API keys are disabled.
+// If set to true, the [RequireAuth] middleware will authenticate requests
+// using API keys. If set to false, the middleware will only authenticate
+// requests using access tokens.
+// If API keys are enabled, you must provide a [TesseralClient] to
+// [RequireAuth] or have the `TESSERAL_BACKEND_API_KEY` environment variable
+// set.
+// The middleware will use the default [client.NewClient] if one is not
+// provided.
+func WithAPIKeysEnabled(enabled bool) Option {
+	return func(o *option) {
+		o.APIKeysEnabled = &enabled
+	}
+}
+
+// WithTesseralClient sets the Tesseral client for [RequireAuth].
+// This is optional. If not set, the middleware will use the default
+// [client.NewClient].
+// If API keys are enabled, you must provide a [TesseralClient] to
+// [RequireAuth] or have the `TESSERAL_BACKEND_API_KEY` environment variable
+// set.
+// The middleware will use the default [client.NewClient] if one is not
+// provided.
+func WithTesseralClient(client *client.Client) Option {
+	return func(o *option) {
+		o.TesseralClient = client
+	}
 }
 
 func extractCredential(projectID string, r *http.Request) string {
