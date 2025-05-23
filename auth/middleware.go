@@ -26,12 +26,15 @@ type Option func(*options)
 
 // WithAPIKeysEnabled sets whether API keys are enabled for [RequireAuth].
 // This is optional. If not set, API keys are disabled.
+//
 // If set to true, the [RequireAuth] middleware will authenticate requests
 // using API keys. If set to false, the middleware will only authenticate
 // requests using access tokens.
+//
 // If API keys are enabled, you must provide a [TesseralClient] to
 // [RequireAuth] or have the `TESSERAL_BACKEND_API_KEY` environment variable
 // set.
+//
 // The middleware will use the default [client.NewClient] if one is not
 // provided.
 func WithAPIKeysEnabled(enabled bool) Option {
@@ -43,9 +46,11 @@ func WithAPIKeysEnabled(enabled bool) Option {
 // WithTesseralClient sets the Tesseral client for [RequireAuth].
 // This is optional. If not set, the middleware will use the default
 // [client.NewClient].
+//
 // If API keys are enabled, you must provide a [TesseralClient] to
 // [RequireAuth] or have the `TESSERAL_BACKEND_API_KEY` environment variable
 // set.
+//
 // The middleware will use the default [client.NewClient] if one is not
 // provided.
 func WithTesseralClient(client *client.Client) Option {
@@ -145,7 +150,7 @@ func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 
 		credential := extractCredential(projectID, r)
 
-		if IsJWTFormat(credential) {
+		if isJWTFormat(credential) {
 			accessTokenClaims, err := authn.AuthenticateAccessToken(ctx, credential)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
@@ -154,7 +159,7 @@ func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 
 			ctx = newAccessTokenAuthContext(ctx, credential, accessTokenClaims)
 			h.ServeHTTP(w, r.WithContext(ctx))
-		} else if cfg.apiKeysEnabled && IsAPIKeyFormat(credential) {
+		} else if cfg.apiKeysEnabled && isAPIKeyFormat(credential) {
 			apiKeyDetails, err := tesseralClient.APIKeys.AuthenticateAPIKey(ctx, &tesseral.AuthenticateAPIKeyRequest{
 				SecretToken: &credential,
 			})

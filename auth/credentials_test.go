@@ -42,7 +42,7 @@ func TestIsJWTFormat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := IsJWTFormat(tt.input)
+			result := isJWTFormat(tt.input)
 			if result != tt.expected {
 				t.Errorf("IsJWTFormat(%q) = %v; want %v", tt.input, result, tt.expected)
 			}
@@ -85,7 +85,7 @@ func TestIsAPIKeyFormat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := IsAPIKeyFormat(tt.input)
+			result := isAPIKeyFormat(tt.input)
 			if result != tt.expected {
 				t.Errorf("IsAPIKeyFormat(%q) = %v; want %v", tt.input, result, tt.expected)
 			}

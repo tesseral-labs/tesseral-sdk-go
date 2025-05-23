@@ -10,11 +10,11 @@ var (
 )
 
 // IsJWTFormat checks whether the string matches the structure of a JWT.
-func IsJWTFormat(value string) bool {
+func isJWTFormat(value string) bool {
 	return jwtRegex.MatchString(value)
 }
 
 // IsAPIKeyFormat checks whether the string is a valid API key format.
-func IsAPIKeyFormat(value string) bool {
+func isAPIKeyFormat(value string) bool {
 	return apiKeyRegex.MatchString(value)
 }
