@@ -55,7 +55,7 @@ func mustAuthContext(ctx context.Context, name string) *ctxValue {
 // CredentialsType returns the type of credentials used to authenticate the
 // request.
 //
-// For accessToken-based authentication, this will be "access_token". For
+// For access token-based authentication, this will be "access_token". For
 // API Key-based authentication, this will be "api_key".
 func CredentialsType(ctx context.Context) string {
 	v := mustAuthContext(ctx, "CredentialsType")
