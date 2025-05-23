@@ -145,12 +145,9 @@ func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 
 		credential := extractCredential(projectID, r)
 
-		fmt.Println("Credential:", credential)
-
 		if IsJWTFormat(credential) {
 			accessTokenClaims, err := authn.AuthenticateAccessToken(ctx, credential)
 			if err != nil {
-				fmt.Printf("RequireAuth: error authenticating access token: %w", err)
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
