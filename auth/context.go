@@ -7,7 +7,8 @@ import (
 	"github.com/tesseral-labs/tesseral-sdk-go"
 )
 
-var errNotAnAccessToken = fmt.Errorf("not an access token")
+// ErrNotAnAccessToken is returned from AccessTokenClaims if a request does not use an access token.
+var ErrNotAnAccessToken = fmt.Errorf("not an access token")
 
 type ctxKey struct{}
 
@@ -55,7 +56,7 @@ func mustAuthContext(ctx context.Context, name string) *ctxValue {
 // request.
 //
 // For accessToken-based authentication, this will be "access_token". For
-// apiKey-based authentication, this will be "api_key".
+// API Key-based authentication, this will be "api_key".
 func CredentialsType(ctx context.Context) string {
 	v := mustAuthContext(ctx, "CredentialsType")
 
@@ -90,8 +91,6 @@ func OrganizationID(ctx context.Context) string {
 // Future versions of this package may add support for other kinds of
 // authentication than access tokens, in which case AccessTokenClaims may return
 // an error.
-//
-// Panics if the provided ctx isn't downstream of [RequireAuth].
 func AccessTokenClaims(ctx context.Context) (*tesseral.AccessTokenClaims, error) {
 	v := mustAuthContext(ctx, "AccessTokenClaims")
 
@@ -99,7 +98,7 @@ func AccessTokenClaims(ctx context.Context) (*tesseral.AccessTokenClaims, error)
 		return v.accessTokenDetails.claims, nil
 	}
 
-	return nil, errNotAnAccessToken
+	return nil, ErrNotAnAccessToken
 }
 
 // Credentials returns the request's original credentials.
