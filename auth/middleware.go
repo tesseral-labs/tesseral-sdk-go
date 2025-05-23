@@ -12,7 +12,6 @@ import (
 	"github.com/tesseral-labs/tesseral-sdk-go/client"
 )
 
-// Option is an option for [RequireAuth].
 type options struct {
 	publishableKey      string
 	configAPIHostname   string
@@ -22,6 +21,7 @@ type options struct {
 	tesseralClient      *client.Client
 }
 
+// Option is an option for [RequireAuth].
 type Option func(*options)
 
 // WithAPIKeysEnabled sets whether API keys are enabled for [RequireAuth].
