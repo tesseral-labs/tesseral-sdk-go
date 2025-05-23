@@ -7,6 +7,8 @@ import (
 	"github.com/tesseral-labs/tesseral-sdk-go"
 )
 
+var errNotAnAccessToken = fmt.Errorf("not an access token")
+
 type ctxKey struct{}
 
 type accessTokenDetails struct {
@@ -15,10 +17,8 @@ type accessTokenDetails struct {
 }
 
 type apiKeyDetails struct {
-	apiKeyID          string
-	apiKeySecretToken string
-	organizationID    string
-	actions           []string
+	apiKeySecretToken          string
+	authenticateAPIKeyResponse *tesseral.AuthenticateAPIKeyResponse
 }
 
 type ctxValue struct {
@@ -35,13 +35,11 @@ func newAccessTokenAuthContext(ctx context.Context, accessToken string, claims *
 	})
 }
 
-func newAPIKeyAuthContext(ctx context.Context, apiKeySecretToken string, details *tesseral.AuthenticateAPIKeyResponse) context.Context {
+func newAPIKeyAuthContext(ctx context.Context, apiKeySecretToken string, response *tesseral.AuthenticateAPIKeyResponse) context.Context {
 	return context.WithValue(ctx, ctxKey{}, &ctxValue{
 		apiKeyDetails: &apiKeyDetails{
-			apiKeyID:          derefOrEmptyString(details.APIKeyID),
-			apiKeySecretToken: apiKeySecretToken,
-			organizationID:    derefOrEmptyString(details.OrganizationID),
-			actions:           details.Actions,
+			apiKeySecretToken:          apiKeySecretToken,
+			authenticateAPIKeyResponse: response,
 		},
 	})
 }
@@ -77,7 +75,7 @@ func OrganizationID(ctx context.Context) string {
 	authCtx := mustAuthContext(ctx, "OrganizationID")
 
 	if authCtx.apiKeyDetails != nil {
-		return authCtx.apiKeyDetails.organizationID
+		return *authCtx.apiKeyDetails.authenticateAPIKeyResponse.OrganizationID
 	}
 	if authCtx.accessTokenDetails != nil {
 		return authCtx.accessTokenDetails.claims.Organization.ID
@@ -101,7 +99,7 @@ func AccessTokenClaims(ctx context.Context) (*tesseral.AccessTokenClaims, error)
 		return authCtx.accessTokenDetails.claims, nil
 	}
 
-	panic("no access token claims found in context")
+	return nil, errNotAnAccessToken
 }
 
 // Credentials returns the request's original credentials.
@@ -122,14 +120,14 @@ func Credentials(ctx context.Context) string {
 // HasPermission returns whether the requester has permission to carry out the
 // given action.
 func HasPermission(ctx context.Context, action string) bool {
-	actions := []string{}
+	var actions []string
 
-	authCtx := mustAuthContext(ctx, "HasPermission")
+	v := mustAuthContext(ctx, "HasPermission")
 
-	if authCtx.apiKeyDetails != nil && authCtx.apiKeyDetails.actions != nil {
-		actions = authCtx.apiKeyDetails.actions
-	} else if authCtx.accessTokenDetails != nil && authCtx.accessTokenDetails.claims.Actions != nil {
-		actions = authCtx.accessTokenDetails.claims.Actions
+	if v.apiKeyDetails != nil && v.apiKeyDetails.authenticateAPIKeyResponse.Actions != nil {
+		actions = v.apiKeyDetails.authenticateAPIKeyResponse.Actions
+	} else if v.accessTokenDetails != nil && v.accessTokenDetails.claims.Actions != nil {
+		actions = v.accessTokenDetails.claims.Actions
 	}
 
 	for _, a := range actions {
@@ -139,12 +137,4 @@ func HasPermission(ctx context.Context, action string) bool {
 	}
 
 	return false
-}
-
-func derefOrEmptyString(s *string) string {
-	var z string
-	if s == nil {
-		return z
-	}
-	return *s
 }
