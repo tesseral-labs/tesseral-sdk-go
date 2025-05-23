@@ -57,12 +57,12 @@ func mustAuthContext(ctx context.Context, name string) *ctxValue {
 // For accessToken-based authentication, this will be "access_token". For
 // apiKey-based authentication, this will be "api_key".
 func CredentialsType(ctx context.Context) string {
-	authCtx := mustAuthContext(ctx, "CredentialsType")
+	v := mustAuthContext(ctx, "CredentialsType")
 
-	if authCtx.apiKeyDetails != nil {
+	if v.apiKeyDetails != nil {
 		return "api_key"
 	}
-	if authCtx.accessTokenDetails != nil {
+	if v.accessTokenDetails != nil {
 		return "access_token"
 	}
 	panic("unreachable")
@@ -72,13 +72,13 @@ func CredentialsType(ctx context.Context) string {
 //
 // Panics if the provided ctx isn't downstream of [RequireAuth].
 func OrganizationID(ctx context.Context) string {
-	authCtx := mustAuthContext(ctx, "OrganizationID")
+	v := mustAuthContext(ctx, "OrganizationID")
 
-	if authCtx.apiKeyDetails != nil {
-		return *authCtx.apiKeyDetails.authenticateAPIKeyResponse.OrganizationID
+	if v.apiKeyDetails != nil {
+		return *v.apiKeyDetails.authenticateAPIKeyResponse.OrganizationID
 	}
-	if authCtx.accessTokenDetails != nil {
-		return authCtx.accessTokenDetails.claims.Organization.ID
+	if v.accessTokenDetails != nil {
+		return v.accessTokenDetails.claims.Organization.ID
 	}
 
 	panic("unreachable")
@@ -93,10 +93,10 @@ func OrganizationID(ctx context.Context) string {
 //
 // Panics if the provided ctx isn't downstream of [RequireAuth].
 func AccessTokenClaims(ctx context.Context) (*tesseral.AccessTokenClaims, error) {
-	authCtx := mustAuthContext(ctx, "AccessTokenClaims")
+	v := mustAuthContext(ctx, "AccessTokenClaims")
 
-	if authCtx.accessTokenDetails != nil {
-		return authCtx.accessTokenDetails.claims, nil
+	if v.accessTokenDetails != nil {
+		return v.accessTokenDetails.claims, nil
 	}
 
 	return nil, errNotAnAccessToken
@@ -106,12 +106,12 @@ func AccessTokenClaims(ctx context.Context) (*tesseral.AccessTokenClaims, error)
 //
 // Panics if the provided ctx isn't downstream of [RequireAuth].
 func Credentials(ctx context.Context) string {
-	authCtx := mustAuthContext(ctx, "Credentials")
-	if authCtx.apiKeyDetails != nil {
-		return authCtx.apiKeyDetails.apiKeySecretToken
+	v := mustAuthContext(ctx, "Credentials")
+	if v.apiKeyDetails != nil {
+		return v.apiKeyDetails.apiKeySecretToken
 	}
-	if authCtx.accessTokenDetails != nil {
-		return authCtx.accessTokenDetails.accessToken
+	if v.accessTokenDetails != nil {
+		return v.accessTokenDetails.accessToken
 	}
 
 	panic("unreachable")
