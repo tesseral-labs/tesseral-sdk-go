@@ -68,12 +68,18 @@ func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 
 	authnOpts := []accesstoken.Option{
 		accesstoken.WithPublishableKey(cfg.PublishableKey),
-		accesstoken.WithConfigAPIHostname(cfg.ConfigAPIHostname),
-		accesstoken.WithJWKSRefreshInterval(cfg.JwksRefreshInterval),
+	}
+
+	if cfg.ConfigAPIHostname != "" {
+		authnOpts = append(authnOpts, accesstoken.WithConfigAPIHostname(cfg.ConfigAPIHostname))
 	}
 
 	if cfg.HttpClient != nil {
 		authnOpts = append(authnOpts, accesstoken.WithHTTPClient(cfg.HttpClient))
+	}
+
+	if cfg.JwksRefreshInterval != 0 {
+		authnOpts = append(authnOpts, accesstoken.WithJWKSRefreshInterval(cfg.JwksRefreshInterval))
 	}
 
 	authn := accesstoken.NewAuthenticator(authnOpts...)
