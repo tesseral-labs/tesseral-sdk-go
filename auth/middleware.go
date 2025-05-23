@@ -24,6 +24,36 @@ type option struct {
 
 type Option func(*option)
 
+// WithAPIKeysEnabled sets whether API keys are enabled for [RequireAuth].
+// This is optional. If not set, API keys are disabled.
+// If set to true, the [RequireAuth] middleware will authenticate requests
+// using API keys. If set to false, the middleware will only authenticate
+// requests using access tokens.
+// If API keys are enabled, you must provide a [TesseralClient] to
+// [RequireAuth] or have the `TESSERAL_BACKEND_API_KEY` environment variable
+// set.
+// The middleware will use the default [client.NewClient] if one is not
+// provided.
+func WithAPIKeysEnabled(enabled bool) Option {
+	return func(o *option) {
+		o.APIKeysEnabled = &enabled
+	}
+}
+
+// WithTesseralClient sets the Tesseral client for [RequireAuth].
+// This is optional. If not set, the middleware will use the default
+// [client.NewClient].
+// If API keys are enabled, you must provide a [TesseralClient] to
+// [RequireAuth] or have the `TESSERAL_BACKEND_API_KEY` environment variable
+// set.
+// The middleware will use the default [client.NewClient] if one is not
+// provided.
+func WithTesseralClient(client *client.Client) Option {
+	return func(o *option) {
+		o.TesseralClient = client
+	}
+}
+
 // WithPublishableKey sets the publishable key for [RequireAuth]. This is
 // always required.
 func WithPublishableKey(publishableKey string) Option {
@@ -115,6 +145,8 @@ func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 
 		credential := extractCredential(projectID, r)
 
+		fmt.Println("Credential:", credential)
+
 		if IsJWTFormat(credential) {
 			accessTokenClaims, err := authn.AuthenticateAccessToken(ctx, credential)
 			if err != nil {
@@ -139,36 +171,6 @@ func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 			w.WriteHeader(http.StatusUnauthorized)
 		}
 	})
-}
-
-// WithAPIKeysEnabled sets whether API keys are enabled for [RequireAuth].
-// This is optional. If not set, API keys are disabled.
-// If set to true, the [RequireAuth] middleware will authenticate requests
-// using API keys. If set to false, the middleware will only authenticate
-// requests using access tokens.
-// If API keys are enabled, you must provide a [TesseralClient] to
-// [RequireAuth] or have the `TESSERAL_BACKEND_API_KEY` environment variable
-// set.
-// The middleware will use the default [client.NewClient] if one is not
-// provided.
-func WithAPIKeysEnabled(enabled bool) Option {
-	return func(o *option) {
-		o.APIKeysEnabled = &enabled
-	}
-}
-
-// WithTesseralClient sets the Tesseral client for [RequireAuth].
-// This is optional. If not set, the middleware will use the default
-// [client.NewClient].
-// If API keys are enabled, you must provide a [TesseralClient] to
-// [RequireAuth] or have the `TESSERAL_BACKEND_API_KEY` environment variable
-// set.
-// The middleware will use the default [client.NewClient] if one is not
-// provided.
-func WithTesseralClient(client *client.Client) Option {
-	return func(o *option) {
-		o.TesseralClient = client
-	}
 }
 
 func extractCredential(projectID string, r *http.Request) string {
