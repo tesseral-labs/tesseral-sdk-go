@@ -66,12 +66,17 @@ func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 		panic("RequireAuth: tesseral client is required when API keys are enabled")
 	}
 
-	authn := accesstoken.NewAuthenticator(
-		WithPublishableKey(cfg.PublishableKey),
-		WithConfigAPIHostname(cfg.ConfigAPIHostname),
-		WithHTTPClient(cfg.HttpClient),
-		WithJWKSRefreshInterval(cfg.JwksRefreshInterval),
-	)
+	authnOpts := []accesstoken.Option{
+		accesstoken.WithPublishableKey(cfg.PublishableKey),
+		accesstoken.WithConfigAPIHostname(cfg.ConfigAPIHostname),
+		accesstoken.WithJWKSRefreshInterval(cfg.JwksRefreshInterval),
+	}
+
+	if cfg.HttpClient != nil {
+		authnOpts = append(authnOpts, accesstoken.WithHTTPClient(cfg.HttpClient))
+	}
+
+	authn := accesstoken.NewAuthenticator(authnOpts...)
 
 	tesseralClient := cfg.TesseralClient
 	if tesseralClient == nil {
