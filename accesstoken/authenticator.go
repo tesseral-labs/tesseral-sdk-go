@@ -260,7 +260,7 @@ func (a *Authenticator) fetchConfig(ctx context.Context) (*configData, error) {
 
 func parseConfig(b []byte) (*configData, error) {
 	var configResponse struct {
-		ProjectID string `json:"projectID"`
+		ProjectID string `json:"projectId"`
 		Keys      []jwk  `json:"keys"`
 	}
 	if err := json.Unmarshal(b, &configResponse); err != nil {
