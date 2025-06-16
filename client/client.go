@@ -5,6 +5,7 @@ package client
 import (
 	apikeyroleassignments "github.com/tesseral-labs/tesseral-sdk-go/apikeyroleassignments"
 	apikeys "github.com/tesseral-labs/tesseral-sdk-go/apikeys"
+	auditlogevents "github.com/tesseral-labs/tesseral-sdk-go/auditlogevents"
 	core "github.com/tesseral-labs/tesseral-sdk-go/core"
 	internal "github.com/tesseral-labs/tesseral-sdk-go/internal"
 	option "github.com/tesseral-labs/tesseral-sdk-go/option"
@@ -29,6 +30,7 @@ type Client struct {
 
 	APIKeyRoleAssignments *apikeyroleassignments.Client
 	APIKeys               *apikeys.Client
+	AuditLogEvents        *auditlogevents.Client
 	Organizations         *organizations.Client
 	Passkeys              *passkeys.Client
 	Projects              *projects.Client
@@ -57,6 +59,7 @@ func NewClient(opts ...option.RequestOption) *Client {
 		header:                options.ToHeader(),
 		APIKeyRoleAssignments: apikeyroleassignments.NewClient(opts...),
 		APIKeys:               apikeys.NewClient(opts...),
+		AuditLogEvents:        auditlogevents.NewClient(opts...),
 		Organizations:         organizations.NewClient(opts...),
 		Passkeys:              passkeys.NewClient(opts...),
 		Projects:              projects.NewClient(opts...),

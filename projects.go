@@ -125,6 +125,8 @@ type Project struct {
 	APIKeysEnabled *bool `json:"apiKeysEnabled,omitempty" url:"apiKeysEnabled,omitempty"`
 	// The prefix used for API Key secret tokens.
 	APIKeySecretTokenPrefix *string `json:"apiKeySecretTokenPrefix,omitempty" url:"apiKeySecretTokenPrefix,omitempty"`
+	// Whether the Project has audit logging enabled.
+	AuditLogsEnabled *bool `json:"auditLogsEnabled,omitempty" url:"auditLogsEnabled,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -324,6 +326,13 @@ func (p *Project) GetAPIKeySecretTokenPrefix() *string {
 		return nil
 	}
 	return p.APIKeySecretTokenPrefix
+}
+
+func (p *Project) GetAuditLogsEnabled() *bool {
+	if p == nil {
+		return nil
+	}
+	return p.AuditLogsEnabled
 }
 
 func (p *Project) GetExtraProperties() map[string]interface{} {
