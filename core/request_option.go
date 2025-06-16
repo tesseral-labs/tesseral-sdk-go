@@ -56,8 +56,8 @@ func (r *RequestOptions) cloneHeader() http.Header {
 	headers := r.HTTPHeader.Clone()
 	headers.Set("X-Fern-Language", "Go")
 	headers.Set("X-Fern-SDK-Name", "github.com/tesseral-labs/tesseral-sdk-go")
-	headers.Set("X-Fern-SDK-Version", "v0.0.7")
-	headers.Set("User-Agent", "github.com/tesseral-labs/tesseral-sdk-go/0.0.7")
+	headers.Set("X-Fern-SDK-Version", "v0.0.8")
+	headers.Set("User-Agent", "github.com/tesseral-labs/tesseral-sdk-go/v0.0.8")
 	return headers
 }
 
