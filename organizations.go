@@ -366,6 +366,8 @@ type Organization struct {
 	LogInWithPassword *bool `json:"logInWithPassword,omitempty" url:"logInWithPassword,omitempty"`
 	// Whether the Organization supports "Log in with SAML".
 	LogInWithSAML *bool `json:"logInWithSaml,omitempty" url:"logInWithSaml,omitempty"`
+	// Whether the Organization supports "Log in with OIDC".
+	LogInWithOidc *bool `json:"logInWithOidc,omitempty" url:"logInWithOidc,omitempty"`
 	// Whether the Organization supports authenticator apps as a secondary auth factor.
 	LogInWithAuthenticatorApp *bool `json:"logInWithAuthenticatorApp,omitempty" url:"logInWithAuthenticatorApp,omitempty"`
 	// Whether the Organization supports passkeys as a secondary auth factor.
@@ -451,6 +453,13 @@ func (o *Organization) GetLogInWithSAML() *bool {
 		return nil
 	}
 	return o.LogInWithSAML
+}
+
+func (o *Organization) GetLogInWithOidc() *bool {
+	if o == nil {
+		return nil
+	}
+	return o.LogInWithOidc
 }
 
 func (o *Organization) GetLogInWithAuthenticatorApp() *bool {
