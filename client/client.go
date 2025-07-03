@@ -8,6 +8,7 @@ import (
 	auditlogevents "github.com/tesseral-labs/tesseral-sdk-go/auditlogevents"
 	core "github.com/tesseral-labs/tesseral-sdk-go/core"
 	internal "github.com/tesseral-labs/tesseral-sdk-go/internal"
+	oidcconnections "github.com/tesseral-labs/tesseral-sdk-go/oidcconnections"
 	option "github.com/tesseral-labs/tesseral-sdk-go/option"
 	organizations "github.com/tesseral-labs/tesseral-sdk-go/organizations"
 	passkeys "github.com/tesseral-labs/tesseral-sdk-go/passkeys"
@@ -31,6 +32,7 @@ type Client struct {
 	APIKeyRoleAssignments *apikeyroleassignments.Client
 	APIKeys               *apikeys.Client
 	AuditLogEvents        *auditlogevents.Client
+	OidcConnections       *oidcconnections.Client
 	Organizations         *organizations.Client
 	Passkeys              *passkeys.Client
 	Projects              *projects.Client
@@ -60,6 +62,7 @@ func NewClient(opts ...option.RequestOption) *Client {
 		APIKeyRoleAssignments: apikeyroleassignments.NewClient(opts...),
 		APIKeys:               apikeys.NewClient(opts...),
 		AuditLogEvents:        auditlogevents.NewClient(opts...),
+		OidcConnections:       oidcconnections.NewClient(opts...),
 		Organizations:         organizations.NewClient(opts...),
 		Passkeys:              passkeys.NewClient(opts...),
 		Projects:              projects.NewClient(opts...),

@@ -80,6 +80,8 @@ type Project struct {
 	LogInWithPassword *bool `json:"logInWithPassword,omitempty" url:"logInWithPassword,omitempty"`
 	// Whether the Project supports "Log in with SAML".
 	LogInWithSAML *bool `json:"logInWithSaml,omitempty" url:"logInWithSaml,omitempty"`
+	// Whether the Project supports "Log in with OIDC".
+	LogInWithOidc *bool `json:"logInWithOidc,omitempty" url:"logInWithOidc,omitempty"`
 	// Whether the Project supports authenticator apps as a secondary auth factor.
 	LogInWithAuthenticatorApp *bool `json:"logInWithAuthenticatorApp,omitempty" url:"logInWithAuthenticatorApp,omitempty"`
 	// Whether the Project supports passkeys as a secondary auth factor.
@@ -200,6 +202,13 @@ func (p *Project) GetLogInWithSAML() *bool {
 		return nil
 	}
 	return p.LogInWithSAML
+}
+
+func (p *Project) GetLogInWithOidc() *bool {
+	if p == nil {
+		return nil
+	}
+	return p.LogInWithOidc
 }
 
 func (p *Project) GetLogInWithAuthenticatorApp() *bool {
