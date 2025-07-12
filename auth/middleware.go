@@ -1,12 +1,14 @@
 package auth
 
 import (
+	"cmp"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	lru "github.com/hashicorp/golang-lru/v2/expirable"
 	"github.com/tesseral-labs/tesseral-sdk-go"
 	"github.com/tesseral-labs/tesseral-sdk-go/accesstoken"
 	"github.com/tesseral-labs/tesseral-sdk-go/client"
@@ -18,6 +20,8 @@ type options struct {
 	httpClient          *http.Client
 	jwksRefreshInterval time.Duration
 	apiKeysEnabled      bool
+	apiKeysCacheSize    int
+	apiKeysCacheTTL     time.Duration
 	tesseralClient      *client.Client
 }
 
@@ -40,6 +44,22 @@ type Option func(*options)
 func WithAPIKeysEnabled(enabled bool) Option {
 	return func(o *options) {
 		o.apiKeysEnabled = enabled
+	}
+}
+
+// WithAPIKeysCache configures the API key cache for [RequireAuth].
+// This is optional. If not set, API key results are not cached.
+//
+// The size parameter controls the maximum number of API keys to cache.
+// The ttl parameter controls how long cached API key authentication results
+// are valid before expiring.
+//
+// Caching API key authentication results can improve performance by avoiding
+// repeated API calls for the same API key within the TTL window.
+func WithAPIKeysCache(size int, ttl time.Duration) Option {
+	return func(o *options) {
+		o.apiKeysCacheSize = size
+		o.apiKeysCacheTTL = ttl
 	}
 }
 
@@ -140,6 +160,12 @@ func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 		tesseralClient = client.NewClient()
 	}
 
+	var apiKeyCache *lru.LRU[string, *cachedAPIKeyResult]
+	if cfg.apiKeysEnabled && cfg.apiKeysCacheTTL > 0 {
+		cacheSize := cmp.Or(cfg.apiKeysCacheSize, 1)
+		apiKeyCache = lru.NewLRU[string, *cachedAPIKeyResult](cacheSize, nil, cfg.apiKeysCacheTTL)
+	}
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -160,9 +186,25 @@ func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 			ctx = newAccessTokenAuthContext(ctx, credential, accessTokenClaims)
 			h.ServeHTTP(w, r.WithContext(ctx))
 		} else if cfg.apiKeysEnabled && isAPIKeyFormat(credential) {
-			apiKeyDetails, err := tesseralClient.APIKeys.AuthenticateAPIKey(ctx, &tesseral.AuthenticateAPIKeyRequest{
-				SecretToken: &credential,
-			})
+			var apiKeyDetails *tesseral.AuthenticateAPIKeyResponse
+			var err error
+
+			if apiKeyCache != nil {
+				if cachedResult, found := apiKeyCache.Get(credential); found {
+					apiKeyDetails, err = cachedResult.response, cachedResult.err
+				}
+			}
+
+			if apiKeyDetails == nil && err == nil {
+				apiKeyDetails, err = tesseralClient.APIKeys.AuthenticateAPIKey(ctx, &tesseral.AuthenticateAPIKeyRequest{
+					SecretToken: &credential,
+				})
+				apiKeyCache.Add(credential, &cachedAPIKeyResult{
+					response: apiKeyDetails,
+					err:      err,
+				})
+			}
+
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				return
@@ -174,6 +216,11 @@ func RequireAuth(h http.Handler, opts ...Option) http.Handler {
 			w.WriteHeader(http.StatusUnauthorized)
 		}
 	})
+}
+
+type cachedAPIKeyResult struct {
+	response *tesseral.AuthenticateAPIKeyResponse
+	err      error
 }
 
 func extractCredential(projectID string, r *http.Request) string {
